@@ -3,11 +3,23 @@ export interface SherpaResult {
   isFinal: boolean;
 }
 
+export interface WhisperModelConfig {
+  encoderUrl: string;
+  decoderUrl: string;
+  tokensUrl: string;
+}
+
+export interface StandardModelConfig {
+  modelUrl: string;
+  tokensUrl: string;
+}
+
 export class SherpaClient {
   private worker: Worker | null = null;
   private onResult: ((result: SherpaResult) => void) | null = null;
   private onError: ((error: Error) => void) | null = null;
   private isInitialized = false;
+  private isWhisperModel = false;
 
   constructor(
     onResult: (result: SherpaResult) => void,
@@ -17,7 +29,35 @@ export class SherpaClient {
     this.onError = onError;
   }
 
+  /**
+   * Initialize with Whisper model (encoder + decoder + tokens)
+   */
+  async initializeWhisper(config: WhisperModelConfig): Promise<void> {
+    this.isWhisperModel = true;
+    return this.initializeInternal({
+      type: "whisper",
+      ...config,
+    });
+  }
+
+  /**
+   * Initialize with standard model (single model + tokens)
+   * For backward compatibility
+   */
   async initialize(modelUrl: string, tokensUrl: string): Promise<void> {
+    this.isWhisperModel = false;
+    return this.initializeInternal({
+      type: "standard",
+      modelUrl,
+      tokensUrl,
+    });
+  }
+
+  private async initializeInternal(
+    config:
+      | ({ type: "whisper" } & WhisperModelConfig)
+      | ({ type: "standard" } & StandardModelConfig)
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         // In Next.js, workers should be in public folder and referenced by path
@@ -67,10 +107,10 @@ export class SherpaClient {
           reject(error);
         };
 
-        // Send init message
+        // Send init message with config
         this.worker.postMessage({
           type: "init",
-          data: { modelUrl, tokensUrl },
+          data: config,
         });
       } catch (error) {
         reject(

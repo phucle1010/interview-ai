@@ -156,11 +156,11 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
   const loadModelAndStartAudio = useCallback(
     async (setupLanguage: string, sessionId: string) => {
       try {
-        // Load model based on language
-        const { modelUrl, tokensUrl } =
-          await ModelLoader.loadModel(setupLanguage);
+        // Load Whisper model (encoder, decoder, tokens)
+        // Currently using whisper-tiny for all languages
+        const whisperModel = await ModelLoader.loadWhisperModel("whisper-tiny");
 
-        // Initialize Sherpa client
+        // Initialize Sherpa client with Whisper model
         const sherpaClient = new SherpaClient(
           (result) => {
             handleTranscript(result, sessionId);
@@ -170,7 +170,7 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
           }
         );
 
-        await sherpaClient.initialize(modelUrl, tokensUrl);
+        await sherpaClient.initializeWhisper(whisperModel);
         sherpaClientRef.current = sherpaClient;
 
         // Initialize audio processor

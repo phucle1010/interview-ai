@@ -49,20 +49,23 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 ```
 
 4. Add STT models:
-   - Place your Sherpa-ONNX model files in `public/models/{language}/`
-   - Required files:
-     - `model.onnx` - The ONNX model file
-     - `tokens.txt` - Token vocabulary file
-   - Example structure:
-     ```
-     public/models/
-       en/
-         model.onnx
-         tokens.txt
-       vi/
-         model.onnx
-         tokens.txt
-     ```
+   - **Whisper Models (Recommended)**: Place Whisper model files in `public/models/whisper-tiny/`
+     - Required files:
+       - `{model-name}-encoder.onnx` - Encoder model
+       - `{model-name}-decoder.onnx` - Decoder model
+       - `{model-name}-tokens.txt` - Token vocabulary file
+     - Example structure:
+       ```
+       public/models/
+         whisper-tiny/
+           tiny-encoder.onnx
+           tiny-decoder.onnx
+           tiny-tokens.txt
+       ```
+   - **Standard Models**: Place model files in `public/models/{language}/`
+     - Required files:
+       - `model.onnx` - The ONNX model file
+       - `tokens.txt` - Token vocabulary file
 
 5. Run the development server:
 
@@ -126,16 +129,32 @@ The application expects the following backend API endpoints:
 
 ## Sherpa-ONNX Integration
 
-The application uses Sherpa-ONNX for real-time speech-to-text. The Web Worker (`public/workers/sherpa-worker.ts`) needs to be updated with actual Sherpa-ONNX WASM integration.
+The application uses Sherpa-ONNX for real-time speech-to-text with Whisper models. The Web Worker (`public/workers/sherpa-worker.js`) is set up to handle Whisper models (encoder + decoder + tokens).
 
 ### Current Implementation
 
-The worker is a placeholder. To integrate Sherpa-ONNX:
+The worker is configured for Whisper models but needs actual Sherpa-ONNX integration. To complete the integration:
 
-1. Install Sherpa-ONNX WASM package
-2. Update `public/workers/sherpa-worker.ts` with actual Sherpa-ONNX initialization
-3. Implement audio processing in the worker
-4. Handle partial and final transcription results
+1. **For Browser (WASM)**:
+   - Download Sherpa-ONNX WASM files from [GitHub releases](https://github.com/k2-fsa/sherpa-onnx/releases)
+   - Or use CDN: `https://cdn.jsdelivr.net/npm/sherpa-onnx@latest/`
+   - Update `public/workers/sherpa-worker.js` to load and initialize WASM module
+   - Implement recognizer initialization with Whisper config
+   - Implement audio processing and result handling
+
+2. **For Node.js (Server-side)**:
+   - The `sherpa-onnx` npm package is already installed
+   - Can be used in API routes for server-side processing
+   - See `lib/ai-processor/sherpa-onnx-loader.ts` for helper functions
+
+### Model Structure
+
+The app supports:
+
+- **Whisper Models**: `whisper-tiny` (encoder + decoder + tokens)
+- **Standard Models**: Single ONNX model + tokens (for backward compatibility)
+
+See `lib/ai-processor/model-loader.ts` for model loading logic.
 
 ## Scripts
 
