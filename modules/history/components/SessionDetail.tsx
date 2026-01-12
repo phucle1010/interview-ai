@@ -1,7 +1,9 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { ArrowLeft, MessageSquare, TrendingUp } from "lucide-react";
+
 import { useSessionHistory } from "@/modules/voice/hooks/use-voice";
 import {
   Card,
@@ -11,7 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MessageSquare, TrendingUp } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 
 interface SessionDetailProps {
   sessionId: string;
@@ -19,7 +22,19 @@ interface SessionDetailProps {
 }
 
 export function SessionDetail({ sessionId, score }: SessionDetailProps) {
-  const { data: messages, isLoading, error } = useSessionHistory(sessionId);
+  const {
+    data: sessionMessages,
+    isLoading,
+    error,
+  } = useSessionHistory(sessionId);
+
+  const messages = useMemo(
+    () =>
+      sessionMessages?.data?.histories
+        .map((message) => message.messages)
+        .flat(),
+    [sessionMessages]
+  );
 
   return (
     <div className="container mx-auto p-6">
@@ -110,19 +125,21 @@ export function SessionDetail({ sessionId, score }: SessionDetailProps) {
                 ) : (
                   messages.map((message, index) => (
                     <div
-                      key={message.id}
-                      className={`flex ${
-                        message.type === "user"
+                      key={message.timestamp}
+                      className={cn(
+                        "flex",
+                        message.role === "user"
                           ? "justify-end"
-                          : "justify-start"
-                      } slide-in-up`}
+                          : "justify-start",
+                        "slide-in-up"
+                      )}
                       style={{
                         animationDelay: `${index * 30}ms`,
                       }}
                     >
                       <div
                         className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-md ${
-                          message.type === "user"
+                          message.role === "user"
                             ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground"
                             : "glass bg-muted/50 border border-border/50"
                         }`}
@@ -132,7 +149,7 @@ export function SessionDetail({ sessionId, score }: SessionDetailProps) {
                         </p>
                         <p
                           className={`mt-1.5 text-xs ${
-                            message.type === "user"
+                            message.role === "user"
                               ? "text-primary-foreground/70"
                               : "text-muted-foreground"
                           }`}

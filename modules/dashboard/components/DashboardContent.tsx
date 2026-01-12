@@ -89,7 +89,7 @@ export function DashboardContent() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {(setupQuery?.setups || []).map((setup, index) => (
             <Card
-              key={setup.id}
+              key={`setup-${setup.id}-${index}`}
               className="glass group hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 ease-out hover:-translate-y-1 border-border/50 fade-in"
               style={{
                 animationDelay: `${index * 50}ms`,

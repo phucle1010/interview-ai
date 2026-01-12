@@ -32,11 +32,26 @@ export interface EndInterviewResponse {
   feedback: string;
 }
 
+export type ChatRole = "assistant" | "user";
+
 export interface ChatMessage {
-  id: string;
-  type: "user" | "ai";
-  content: string;
-  timestamp: string;
+  _id: string;
+  userId: string;
+  sessionId: string;
+  language: "vi" | "en" | "de" | "zh";
+  metadata: {
+    totalMessages: number;
+    lastActivity: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+  messageCount: number;
+  lastMessage: {
+    role: ChatRole;
+    content: string;
+    timestamp: string;
+  };
 }
 
 export interface GetInterviewStatusResponse {
@@ -48,13 +63,33 @@ export interface GetInterviewStatusResponse {
 export interface GetChatHistoriesResponse {
   histories: ChatMessage[];
   total: number;
+  limit: 20;
+  offset: 0;
 }
 
-export interface GetChatHistoriesListResponse {
-  histories: Array<{
-    sessionId: string;
-    createdAt: string;
-    messageCount: number;
-  }>;
+export interface GetSessionHistoryResponse {
+  histories: [
+    {
+      metadata: {
+        totalMessages: number;
+        lastActivity: string;
+      };
+      _id: string;
+      userId: string;
+      sessionId: string;
+      messages: {
+        role: ChatRole;
+        content: string;
+        timestamp: string;
+      }[];
+      language: "vi" | "en" | "de" | "zh";
+      createdAt: string;
+      updatedAt: string;
+      __v: number;
+    },
+  ];
   total: number;
+  limit: number;
+  offset: number;
+  sessionId: string;
 }

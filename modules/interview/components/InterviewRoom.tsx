@@ -39,7 +39,6 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
     isProcessing,
     currentQuestion,
     messages,
-    language,
     setSession,
     addMessage,
     setCurrentQuestion,
@@ -87,7 +86,7 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
         { sessionId },
         {
           onSuccess: (result) => {
-            router.push(`/history/${sessionId}?score=${result.score}`);
+            router.push(`/history/${sessionId}?score=${result.data?.score}`);
           },
           onError: (err) => {
             setError(
@@ -123,14 +122,14 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
           onSuccess: (response) => {
             addMessage({
               type: "ai",
-              content: response.response,
+              content: response.data?.response || "",
             });
 
-            if (response.question) {
-              setCurrentQuestion(response.question);
+            if (response.data?.question) {
+              setCurrentQuestion(response.data?.question);
             }
 
-            if (response.isComplete) {
+            if (response.data?.isComplete) {
               handleEndInterview(sessionId);
             }
             setProcessing(false);
@@ -209,9 +208,12 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
         { setupId },
         {
           onSuccess: (response) => {
-            setSession(response.sessionId, setupId, setupLanguage);
-            setCurrentQuestion(response.question);
-            loadModelAndStartAudio(setupLanguage, response.sessionId);
+            setSession(response.data?.sessionId || "", setupId, setupLanguage);
+            setCurrentQuestion(response.data?.question || "");
+            loadModelAndStartAudio(
+              setupLanguage,
+              response.data?.sessionId || ""
+            );
           },
           onError: (err) => {
             setError(

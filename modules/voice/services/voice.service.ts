@@ -10,47 +10,43 @@ import {
   GetInterviewStatusResponse,
   ChatMessage,
   GetChatHistoriesResponse,
-  GetChatHistoriesListResponse,
+  GetSessionHistoryResponse,
 } from "@/modules/voice/schemas";
+import { HttpResponse } from "@/lib/types/http";
 
 export const voiceService = {
   start: async (
     data: StartInterviewRequest
-  ): Promise<StartInterviewResponse> => {
-    const response = await axiosInstance.post<StartInterviewResponse>(
-      "/voice/interview/start",
-      data
-    );
+  ): Promise<HttpResponse<StartInterviewResponse>> => {
+    const response = await axiosInstance.post("/voice/interview/start", data);
     return response.data;
   },
 
   process: async (
     data: ProcessTranscriptRequest
-  ): Promise<ProcessTranscriptResponse> => {
-    const response = await axiosInstance.post<ProcessTranscriptResponse>(
-      "/voice/process",
-      data
-    );
+  ): Promise<HttpResponse<ProcessTranscriptResponse>> => {
+    const response = await axiosInstance.post("/voice/process", data);
     return response.data;
   },
 
-  end: async (data: EndInterviewRequest): Promise<EndInterviewResponse> => {
-    const response = await axiosInstance.post<EndInterviewResponse>(
-      "/voice/interview/end",
-      data
-    );
+  end: async (
+    data: EndInterviewRequest
+  ): Promise<HttpResponse<EndInterviewResponse>> => {
+    const response = await axiosInstance.post("/voice/interview/end", data);
     return response.data;
   },
 
-  getInterviewStatus: async (): Promise<GetInterviewStatusResponse> => {
-    const response = await axiosInstance.get<GetInterviewStatusResponse>(
-      "/voice/interview/status"
-    );
+  getInterviewStatus: async (): Promise<
+    HttpResponse<GetInterviewStatusResponse>
+  > => {
+    const response = await axiosInstance.get("/voice/interview/status");
     return response.data;
   },
 
-  getSessionHistory: async (sessionId: string): Promise<ChatMessage[]> => {
-    const response = await axiosInstance.get<ChatMessage[]>(
+  getSessionHistory: async (
+    sessionId: string
+  ): Promise<HttpResponse<GetSessionHistoryResponse>> => {
+    const response = await axiosInstance.get(
       `/voice/histories/session/${sessionId}`
     );
     return response.data;
@@ -59,12 +55,12 @@ export const voiceService = {
   getChatHistories: async (
     userId: string,
     options?: { limit?: number; offset?: number }
-  ): Promise<GetChatHistoriesResponse> => {
+  ): Promise<HttpResponse<GetChatHistoriesResponse>> => {
     const params = new URLSearchParams();
     if (options?.limit) params.append("limit", options.limit.toString());
     if (options?.offset) params.append("offset", options.offset.toString());
 
-    const response = await axiosInstance.get<GetChatHistoriesResponse>(
+    const response = await axiosInstance.get(
       `/voice/history/${userId}${params.toString() ? `?${params.toString()}` : ""}`
     );
     return response.data;
@@ -74,13 +70,13 @@ export const voiceService = {
     userId?: string;
     limit?: number;
     offset?: number;
-  }): Promise<GetChatHistoriesResponse> => {
+  }): Promise<HttpResponse<GetChatHistoriesResponse>> => {
     const params = new URLSearchParams();
     if (options?.userId) params.append("userId", options.userId);
     if (options?.limit) params.append("limit", options.limit.toString());
     if (options?.offset) params.append("offset", options.offset.toString());
 
-    const response = await axiosInstance.get<GetChatHistoriesResponse>(
+    const response = await axiosInstance.get(
       `/voice/history${params.toString() ? `?${params.toString()}` : ""}`
     );
     return response.data;
@@ -90,13 +86,13 @@ export const voiceService = {
     limit?: number;
     offset?: number;
     sessionId?: string;
-  }): Promise<GetChatHistoriesListResponse> => {
+  }): Promise<HttpResponse<GetChatHistoriesResponse>> => {
     const params = new URLSearchParams();
     if (options?.limit) params.append("limit", options.limit.toString());
     if (options?.offset) params.append("offset", options.offset.toString());
     if (options?.sessionId) params.append("sessionId", options.sessionId);
 
-    const response = await axiosInstance.get<GetChatHistoriesListResponse>(
+    const response = await axiosInstance.get(
       `/voice/histories${params.toString() ? `?${params.toString()}` : ""}`
     );
     return response.data;
