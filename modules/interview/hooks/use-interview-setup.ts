@@ -10,7 +10,7 @@ export function useInterviewSetups() {
     queryFn: () => interviewService.getSetups(),
   });
 
-  return { data: data?.data || [], isLoading, error: error?.message };
+  return { data: data?.data, isLoading, error: error?.message };
 }
 
 export function useInterviewSetup(setupId: string | null) {

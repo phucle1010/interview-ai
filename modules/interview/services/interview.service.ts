@@ -4,10 +4,11 @@ import { HttpResponse } from "@/lib/types/http";
 import {
   CreateSetupRequest,
   InterviewSetup,
+  InterviewSetupResponse,
 } from "@/modules/interview/schemas";
 
 export const interviewService = {
-  getSetups: async (): Promise<HttpResponse<InterviewSetup[]>> => {
+  getSetups: async (): Promise<HttpResponse<InterviewSetupResponse>> => {
     const response = await axiosInstance.get("/interviews/setup");
     return response.data;
   },

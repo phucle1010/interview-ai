@@ -16,7 +16,7 @@ import { Plus } from "lucide-react";
 
 export function DashboardContent() {
   const router = useRouter();
-  const { data: setups, isLoading, error } = useInterviewSetups();
+  const { data: setupQuery, isLoading, error } = useInterviewSetups();
 
   const handleStartInterview = (setupId: string) => {
     router.push(`/interview?setupId=${setupId}`);
@@ -60,7 +60,7 @@ export function DashboardContent() {
             </Card>
           ))}
         </div>
-      ) : !setups || setups.length === 0 ? (
+      ) : !setupQuery?.setups || setupQuery?.setups.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <p className="mb-4 text-muted-foreground">
@@ -76,7 +76,7 @@ export function DashboardContent() {
         </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {setups.map((setup) => (
+          {(setupQuery?.setups || []).map((setup) => (
             <Card key={setup.id}>
               <CardHeader>
                 <CardTitle>{setup.jobRole}</CardTitle>

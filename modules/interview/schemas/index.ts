@@ -55,6 +55,11 @@ export interface InterviewSetup {
   createdAt: string;
 }
 
+export interface InterviewSetupResponse {
+  setups: InterviewSetup[];
+  total: number;
+}
+
 export interface CreateSetupRequest {
   jobRole: string;
   experienceLevel: string;
