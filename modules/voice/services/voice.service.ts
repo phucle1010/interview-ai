@@ -1,47 +1,24 @@
 import { axiosInstance } from "@/lib/configs/axios";
 
-export interface StartInterviewRequest {
-  setupId: string;
-}
-
-export interface StartInterviewResponse {
-  sessionId: string;
-  question: string;
-}
-
-export interface ProcessTranscriptRequest {
-  sessionId: string;
-  transcript: string;
-}
-
-export interface ProcessTranscriptResponse {
-  response: string;
-  question?: string;
-  isComplete: boolean;
-}
-
-export interface EndInterviewRequest {
-  sessionId: string;
-}
-
-export interface EndInterviewResponse {
-  score: number;
-  feedback: string;
-}
-
-export interface ChatMessage {
-  id: string;
-  type: "user" | "ai";
-  content: string;
-  timestamp: string;
-}
+import {
+  StartInterviewRequest,
+  StartInterviewResponse,
+  ProcessTranscriptRequest,
+  ProcessTranscriptResponse,
+  EndInterviewRequest,
+  EndInterviewResponse,
+  GetInterviewStatusResponse,
+  ChatMessage,
+  GetChatHistoriesResponse,
+  GetChatHistoriesListResponse,
+} from "@/modules/voice/schemas";
 
 export const voiceService = {
   start: async (
     data: StartInterviewRequest
   ): Promise<StartInterviewResponse> => {
     const response = await axiosInstance.post<StartInterviewResponse>(
-      "/voice/start",
+      "/voice/interview/start",
       data
     );
     return response.data;
@@ -59,8 +36,15 @@ export const voiceService = {
 
   end: async (data: EndInterviewRequest): Promise<EndInterviewResponse> => {
     const response = await axiosInstance.post<EndInterviewResponse>(
-      "/voice/end",
+      "/voice/interview/end",
       data
+    );
+    return response.data;
+  },
+
+  getInterviewStatus: async (): Promise<GetInterviewStatusResponse> => {
+    const response = await axiosInstance.get<GetInterviewStatusResponse>(
+      "/voice/interview/status"
     );
     return response.data;
   },
@@ -70,5 +54,55 @@ export const voiceService = {
       `/voice/histories/session/${sessionId}`
     );
     return response.data;
+  },
+
+  getChatHistories: async (
+    userId: string,
+    options?: { limit?: number; offset?: number }
+  ): Promise<GetChatHistoriesResponse> => {
+    const params = new URLSearchParams();
+    if (options?.limit) params.append("limit", options.limit.toString());
+    if (options?.offset) params.append("offset", options.offset.toString());
+
+    const response = await axiosInstance.get<GetChatHistoriesResponse>(
+      `/voice/history/${userId}${params.toString() ? `?${params.toString()}` : ""}`
+    );
+    return response.data;
+  },
+
+  getChatHistory: async (options?: {
+    userId?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<GetChatHistoriesResponse> => {
+    const params = new URLSearchParams();
+    if (options?.userId) params.append("userId", options.userId);
+    if (options?.limit) params.append("limit", options.limit.toString());
+    if (options?.offset) params.append("offset", options.offset.toString());
+
+    const response = await axiosInstance.get<GetChatHistoriesResponse>(
+      `/voice/history${params.toString() ? `?${params.toString()}` : ""}`
+    );
+    return response.data;
+  },
+
+  getChatHistoriesList: async (options?: {
+    limit?: number;
+    offset?: number;
+    sessionId?: string;
+  }): Promise<GetChatHistoriesListResponse> => {
+    const params = new URLSearchParams();
+    if (options?.limit) params.append("limit", options.limit.toString());
+    if (options?.offset) params.append("offset", options.offset.toString());
+    if (options?.sessionId) params.append("sessionId", options.sessionId);
+
+    const response = await axiosInstance.get<GetChatHistoriesListResponse>(
+      `/voice/histories${params.toString() ? `?${params.toString()}` : ""}`
+    );
+    return response.data;
+  },
+
+  deleteChatHistory: async (userId: string): Promise<void> => {
+    await axiosInstance.delete(`/voice/history/${userId}`);
   },
 };
