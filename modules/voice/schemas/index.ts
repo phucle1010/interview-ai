@@ -1,8 +1,8 @@
 export interface StartInterviewRequest {
   setupId?: string;
-  role?: string;
-  level?: string;
-  focusAreas?: string[];
+  role: string;
+  level: string;
+  focusAreas: string[];
   language?: string;
   maxQuestions?: number;
 }

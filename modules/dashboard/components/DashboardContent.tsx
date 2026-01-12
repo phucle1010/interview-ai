@@ -18,8 +18,22 @@ export function DashboardContent() {
   const router = useRouter();
   const { data: setupQuery, isLoading, error } = useInterviewSetups();
 
-  const handleStartInterview = (setupId: string) => {
-    router.push(`/interview?setupId=${setupId}`);
+  const handleStartInterview = (
+    setupId: string,
+    role: string,
+    level: string,
+    focusAreas: string[],
+    language: string,
+    maxQuestions: number
+  ) => {
+    const searchParams = new URLSearchParams();
+    searchParams.set("setupId", setupId);
+    searchParams.set("role", role);
+    searchParams.set("level", level);
+    searchParams.set("focusAreas", focusAreas.join(","));
+    searchParams.set("language", language);
+    searchParams.set("maxQuestions", maxQuestions.toString());
+    router.push(`/interview?${searchParams.toString()}`);
   };
 
   return (
@@ -89,7 +103,7 @@ export function DashboardContent() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {(setupQuery?.setups || []).map((setup, index) => (
             <Card
-              key={`setup-${setup.id}-${index}`}
+              key={`setup-${setup._id}-${index}`}
               className="glass group hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 ease-out hover:-translate-y-1 border-border/50 fade-in"
               style={{
                 animationDelay: `${index * 50}ms`,
@@ -128,7 +142,16 @@ export function DashboardContent() {
               <CardFooter>
                 <Button
                   className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md shadow-primary/20 transition-all hover:scale-105"
-                  onClick={() => handleStartInterview(setup.id)}
+                  onClick={() =>
+                    handleStartInterview(
+                      setup._id,
+                      setup.jobRole,
+                      setup.experienceLevel,
+                      setup.focusAreas,
+                      setup.language,
+                      setup.maxQuestions || 10
+                    )
+                  }
                 >
                   Start Interview
                 </Button>

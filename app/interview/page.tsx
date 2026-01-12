@@ -18,8 +18,20 @@ function InterviewLoading() {
 function InterviewContent() {
   const searchParams = useSearchParams();
   const setupId = searchParams.get("setupId");
+  const role = searchParams.get("role");
+  const level = searchParams.get("level");
+  const focusAreas = searchParams.get("focusAreas");
+  const language = searchParams.get("language");
+  const maxQuestions = searchParams.get("maxQuestions");
 
-  if (!setupId) {
+  if (
+    !setupId ||
+    !role ||
+    !level ||
+    !focusAreas ||
+    !language ||
+    !maxQuestions
+  ) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -29,7 +41,16 @@ function InterviewContent() {
     );
   }
 
-  return <InterviewRoom setupId={setupId} />;
+  return (
+    <InterviewRoom
+      setupId={setupId}
+      role={role}
+      level={level}
+      focusAreas={focusAreas ? focusAreas.split(",") : []}
+      language={language}
+      maxQuestions={maxQuestions ? parseInt(maxQuestions) : 10}
+    />
+  );
 }
 
 export default function InterviewPage() {

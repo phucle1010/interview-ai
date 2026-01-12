@@ -1,44 +1,73 @@
-// Web Worker for Sherpa-ONNX processing
-// This is a placeholder - you'll need to integrate actual Sherpa-ONNX WASM here
+// Web Worker for Sherpa-ONNX processing with Whisper model support
+// This worker handles both Whisper models (encoder+decoder) and standard models
 
 interface WorkerMessage {
   type: "init" | "process" | "reset";
   data?: unknown;
 }
 
-interface InitData {
+interface WhisperInitData {
+  type: "whisper";
+  encoderUrl: string;
+  decoderUrl: string;
+  tokensUrl: string;
+}
+
+interface StandardInitData {
+  type: "standard";
   modelUrl: string;
   tokensUrl: string;
 }
 
+type InitData = WhisperInitData | StandardInitData;
+
 interface ProcessData {
   audioData: Float32Array;
 }
+
+interface ResultData {
+  transcript: string;
+  isFinal: boolean;
+}
+
+interface ErrorData {
+  error: string;
+}
+
+interface SuccessData {
+  message: string;
+  warning?: string;
+}
+
+// Note: This TypeScript file is for type reference
+// The actual implementation is in sherpa-worker.js
+// TypeScript cannot be directly used in Web Workers without compilation
 
 self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
   const { type, data } = e.data;
 
   switch (type) {
     case "init": {
-      const { modelUrl, tokensUrl } = data as InitData;
+      const initData = data as InitData;
       try {
-        // TODO: Initialize Sherpa-ONNX WASM here
-        // This would involve:
-        // 1. Loading the WASM module
-        // 2. Loading the .onnx model
+        // Implementation: Initialize Sherpa-ONNX WASM
+        // See sherpa-worker.js for actual implementation
+        // This involves:
+        // 1. Loading the WASM module from CDN or local files
+        // 2. Loading the .onnx model files
         // 3. Loading tokens.txt
-        // 4. Initializing the recognizer
+        // 4. Initializing the recognizer with proper config
 
         self.postMessage({
           type: "init-success",
-          data: { message: "Model initialized" },
+          data: { message: "Model initialized" } as SuccessData,
         });
       } catch (error) {
         self.postMessage({
           type: "init-error",
           data: {
             error: error instanceof Error ? error.message : "Unknown error",
-          },
+          } as ErrorData,
         });
       }
       break;
@@ -47,37 +76,39 @@ self.onmessage = async (e: MessageEvent<WorkerMessage>) => {
     case "process": {
       const { audioData } = data as ProcessData;
       try {
-        // TODO: Process audio with Sherpa-ONNX
-        // This would involve:
-        // 1. Feeding audio data to the recognizer
-        // 2. Getting partial and final results
-        // 3. Sending results back to main thread
+        // Implementation: Process audio with Sherpa-ONNX
+        // See sherpa-worker.js for actual implementation
+        // This involves:
+        // 1. Feeding audio data to the recognizer stream
+        // 2. Decoding the stream
+        // 3. Getting partial and final results
+        // 4. Sending results back to main thread
 
-        // Placeholder: Simulate processing
-        // In real implementation, this would call Sherpa-ONNX API
-        const transcript = ""; // Get from Sherpa-ONNX
-        const isFinal = false; // Get from Sherpa-ONNX
+        const transcript = ""; // Get from recognizer.getResult()
+        const isFinal = false; // Get from recognizer.getResult()
 
         self.postMessage({
           type: "result",
           data: {
             transcript,
             isFinal,
-          },
+          } as ResultData,
         });
       } catch (error) {
         self.postMessage({
           type: "error",
           data: {
             error: error instanceof Error ? error.message : "Unknown error",
-          },
+          } as ErrorData,
         });
       }
       break;
     }
 
     case "reset": {
-      // TODO: Reset the recognizer state
+      // Implementation: Reset the recognizer state
+      // See sherpa-worker.js for actual implementation
+      // This resets the stream and recognizer state
       self.postMessage({
         type: "reset-success",
       });

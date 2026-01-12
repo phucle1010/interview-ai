@@ -18,6 +18,7 @@ export class ModelLoader {
     modelName: string = "whisper-tiny"
   ): Promise<WhisperModelFiles> {
     const modelPath = `/models/${modelName}`;
+    // Map model name to actual file prefix
     const encoderUrl = `${modelPath}/${modelName}-encoder.onnx`;
     const decoderUrl = `${modelPath}/${modelName}-decoder.onnx`;
     const tokensUrl = `${modelPath}/${modelName}-tokens.txt`;
