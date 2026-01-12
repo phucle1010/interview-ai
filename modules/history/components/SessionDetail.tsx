@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, MessageSquare, TrendingUp } from "lucide-react";
+import { format } from "date-fns";
 
 import { useSessionHistory } from "@/modules/voice/hooks/use-voice";
 import {
@@ -26,29 +27,85 @@ export function SessionDetail({ sessionId, score }: SessionDetailProps) {
     data: sessionMessages,
     isLoading,
     error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
   } = useSessionHistory(sessionId);
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const isInitialLoadRef = useRef(true);
 
   const messages = useMemo(
     () =>
-      sessionMessages?.data?.histories
-        .map((message) => message.messages)
-        .flat(),
+      sessionMessages?.pages
+        ?.flatMap((page) => page.data?.histories ?? [])
+        .flatMap((history) => history.messages ?? []) ?? [],
     [sessionMessages]
   );
 
+  const scrollToBottom = useCallback((smooth = false) => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: smooth ? "smooth" : "auto",
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading && messages.length > 0 && isInitialLoadRef.current) {
+      // Scroll to bottom on initial load
+      setTimeout(() => {
+        scrollToBottom();
+        isInitialLoadRef.current = false;
+      }, 100);
+    }
+  }, [isLoading, messages.length, scrollToBottom]);
+
+  const handleScroll = useCallback(
+    (event: React.UIEvent<HTMLDivElement>) => {
+      if (!hasNextPage || isFetchingNextPage) return;
+      const target = event.currentTarget;
+      const threshold = 120;
+      if (
+        target.scrollTop + target.clientHeight >=
+        target.scrollHeight - threshold
+      ) {
+        fetchNextPage();
+      }
+    },
+    [fetchNextPage, hasNextPage, isFetchingNextPage]
+  );
+
+  const renderSkeletonMessages = (count = 6) => (
+    <div className="space-y-3 lg:space-y-4">
+      {Array.from({ length: count }).map((_, index) => (
+        <div
+          key={index}
+          className={cn(
+            "flex",
+            index % 2 === 0 ? "justify-start" : "justify-end"
+          )}
+        >
+          <div className="h-16 w-full max-w-[70%] rounded-lg bg-muted/70 animate-pulse" />
+        </div>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-8 fade-in">
+    <div className="container mx-auto px-4 py-4 lg:py-6">
+      <div className="mb-6 lg:mb-8 fade-in">
         <Link href="/history">
           <Button
             variant="ghost"
-            className="mb-4 hover:bg-accent/50 transition-all duration-200 group"
+            className="mb-3 hover:bg-accent/50 transition-all duration-200 group"
           >
             <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
             Back to History
           </Button>
         </Link>
-        <h1 className="text-4xl font-bold gradient-text mb-2 fade-in">
+        <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-2 fade-in">
           Session Details
         </h1>
         <p
@@ -66,16 +123,18 @@ export function SessionDetail({ sessionId, score }: SessionDetailProps) {
       )}
 
       {isLoading ? (
-        <Card>
-          <CardContent className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-              <p className="text-muted-foreground">Loading session...</p>
-            </div>
-          </CardContent>
+        <Card className="glass border-border/50 shadow-none">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-xl gradient-text">
+              <MessageSquare className="h-5 w-5" />
+              Conversation Timeline
+            </CardTitle>
+            <CardDescription>Loading session...</CardDescription>
+          </CardHeader>
+          <CardContent>{renderSkeletonMessages(8)}</CardContent>
         </Card>
       ) : (
-        <div className="mx-auto max-w-4xl space-y-6">
+        <div className="mx-auto max-w-full space-y-4 lg:space-y-6">
           {score !== undefined && (
             <Card className="glass border-border/50 shadow-xl">
               <CardHeader className="pb-4">
@@ -100,7 +159,7 @@ export function SessionDetail({ sessionId, score }: SessionDetailProps) {
             </Card>
           )}
 
-          <Card className="glass border-border/50 shadow-xl">
+          <Card className="glass border-border/50 shadow-none">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-xl gradient-text">
                 <MessageSquare className="h-5 w-5" />
@@ -109,7 +168,11 @@ export function SessionDetail({ sessionId, score }: SessionDetailProps) {
               <CardDescription>Complete interview conversation</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+              <div
+                ref={scrollRef}
+                onScroll={handleScroll}
+                className="space-y-3 lg:space-y-4 max-h-[70vh] overflow-y-auto pr-1.5 lg:pr-2 py-3"
+              >
                 {!messages || messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <div className="mb-4 rounded-full bg-muted p-4">
@@ -138,27 +201,36 @@ export function SessionDetail({ sessionId, score }: SessionDetailProps) {
                       }}
                     >
                       <div
-                        className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-md ${
-                          message.role === "user"
-                            ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground"
-                            : "glass bg-muted/50 border border-border/50"
-                        }`}
+                        className={cn(
+                          "flex flex-col gap-1 w-full",
+                          message.role === "user" ? "items-end" : "items-start"
+                        )}
                       >
-                        <p className="text-sm leading-relaxed">
-                          {message.content}
-                        </p>
                         <p
-                          className={`mt-1.5 text-xs ${
-                            message.role === "user"
-                              ? "text-primary-foreground/70"
-                              : "text-muted-foreground"
-                          }`}
+                          className={cn("font-medium text-xs text-neutral-500")}
                         >
-                          {new Date(message.timestamp).toLocaleString()}
+                          {message.timestamp
+                            ? format(message.timestamp, "dd MMM yyyy, HH:mm:ss")
+                            : ""}
                         </p>
+                        <div
+                          className={cn(
+                            "max-w-[75%] sm:max-w-[65%] md:max-w-[60%] rounded-lg px-4 py-3 shadow-none text-primary-foreground",
+                            message.role === "user"
+                              ? "bg-gradient-to-br from-primary to-primary/80"
+                              : "bg-red-500/80 border border-border/50"
+                          )}
+                        >
+                          <p className="text-sm leading-relaxed">
+                            {message.content}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ))
+                )}
+                {isFetchingNextPage && (
+                  <div className="py-2">{renderSkeletonMessages(2)}</div>
                 )}
               </div>
             </CardContent>

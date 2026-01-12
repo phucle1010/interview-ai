@@ -44,10 +44,17 @@ export const voiceService = {
   },
 
   getSessionHistory: async (
-    sessionId: string
+    sessionId: string,
+    options?: { limit?: number; offset?: number }
   ): Promise<HttpResponse<GetSessionHistoryResponse>> => {
+    const params = new URLSearchParams();
+    if (options?.limit) params.append("limit", options.limit.toString());
+    if (options?.offset) params.append("offset", options.offset.toString());
+
     const response = await axiosInstance.get(
-      `/voice/histories/session/${sessionId}`
+      `/voice/histories/session/${sessionId}${
+        params.toString() ? `?${params.toString()}` : ""
+      }`
     );
     return response.data;
   },

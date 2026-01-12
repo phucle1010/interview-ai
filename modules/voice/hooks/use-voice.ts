@@ -32,11 +32,31 @@ export function useEndInterview() {
   });
 }
 
-export function useSessionHistory(sessionId: string | null) {
-  return useQuery({
-    queryKey: ["session-history", sessionId],
-    queryFn: () => voiceService.getSessionHistory(sessionId!),
+export function useSessionHistory(
+  sessionId: string | null,
+  options?: { limit?: number }
+) {
+  const limit = options?.limit ?? 20;
+
+  return useInfiniteQuery({
+    queryKey: ["session-history", sessionId, limit],
+    queryFn: ({ pageParam = 0 }) =>
+      voiceService.getSessionHistory(sessionId!, {
+        limit,
+        offset: pageParam as number,
+      }),
     enabled: !!sessionId,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      const totalMessages = allPages
+        .flatMap((page) => page.data?.histories ?? [])
+        .reduce((sum, history) => sum + (history.messages?.length ?? 0), 0);
+      const total = lastPage.data?.total ?? 0;
+      if (totalMessages < total) {
+        return totalMessages;
+      }
+      return undefined;
+    },
   });
 }
 
