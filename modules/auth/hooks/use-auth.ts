@@ -1,5 +1,6 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 import { authService } from "@/modules/auth/services/auth.service";
 import { LoginRequest, SignupRequest } from "@/modules/auth/schemas";
@@ -9,14 +10,14 @@ import { useAuthStore } from "@/store/auth-store";
 
 export function useLogin() {
   const router = useRouter();
-  const { setUser } = useAuthStore();
+  const { fetchUser } = useAuthStore();
 
   return useMutation({
     mutationFn: (data: LoginRequest) => authService.login(data),
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       auth.setToken(response.token);
-      auth.setUser(response.user);
-      setUser(response.user);
+      // Fetch user from API after login
+      await fetchUser();
       router.push("/dashboard");
     },
   });
@@ -24,15 +25,37 @@ export function useLogin() {
 
 export function useSignup() {
   const router = useRouter();
-  const { setUser } = useAuthStore();
+  const { fetchUser } = useAuthStore();
 
   return useMutation({
     mutationFn: (data: SignupRequest) => authService.signup(data),
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       auth.setToken(response.token);
-      auth.setUser(response.user);
-      setUser(response.user);
+      // Fetch user from API after signup
+      await fetchUser();
       router.push("/dashboard");
     },
   });
+}
+
+export function useGetMe() {
+  const { setUser } = useAuthStore();
+
+  const query = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: () => authService.getMe(),
+    enabled: auth.isAuthenticated(),
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (query.data) {
+      setUser(query.data);
+    } else if (query.isError) {
+      // If getMe fails, user might not be authenticated
+      setUser(null);
+    }
+  }, [query.data, query.isError, setUser]);
+
+  return query;
 }

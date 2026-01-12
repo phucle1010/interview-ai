@@ -5,18 +5,22 @@ import { interviewService } from "@/modules/interview/services/interview.service
 import { CreateSetupRequest } from "@/modules/interview/schemas";
 
 export function useInterviewSetups() {
-  return useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["interview-setups"],
     queryFn: () => interviewService.getSetups(),
   });
+
+  return { data: data?.data || [], isLoading, error: error?.message };
 }
 
 export function useInterviewSetup(setupId: string | null) {
-  return useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ["interview-setup", setupId],
     queryFn: () => interviewService.getSetup(setupId!),
     enabled: !!setupId,
   });
+
+  return { data: data?.data, isLoading, error: error?.message };
 }
 
 export function useCreateInterviewSetup() {
@@ -28,7 +32,7 @@ export function useCreateInterviewSetup() {
       interviewService.createSetup(data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["interview-setups"] });
-      router.push(`/interview?setupId=${response.id}`);
+      router.push(`/interview?setupId=${response.data?.id}`);
     },
   });
 }

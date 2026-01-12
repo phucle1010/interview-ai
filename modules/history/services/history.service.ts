@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/lib/configs/axios";
+import { HttpResponse } from "@/lib/types/http";
 
 export interface InterviewSession {
   id: string;
@@ -11,10 +12,10 @@ export interface InterviewSession {
 }
 
 export const historyService = {
-  getUserInterviews: async (userId: string): Promise<InterviewSession[]> => {
-    const response = await axiosInstance.get<InterviewSession[]>(
-      `/interviews/user/${userId}`
-    );
+  getUserInterviews: async (
+    userId: string
+  ): Promise<HttpResponse<InterviewSession[]>> => {
+    const response = await axiosInstance.get(`/interviews/user/${userId}`);
     return response.data;
   },
 };

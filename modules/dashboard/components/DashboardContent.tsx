@@ -39,7 +39,7 @@ export function DashboardContent() {
 
       {error && (
         <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          {error.message}
+          {error}
         </div>
       )}
 

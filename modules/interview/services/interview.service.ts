@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/lib/configs/axios";
+import { HttpResponse } from "@/lib/types/http";
 
 import {
   CreateSetupRequest,
@@ -6,24 +7,20 @@ import {
 } from "@/modules/interview/schemas";
 
 export const interviewService = {
-  getSetups: async (): Promise<InterviewSetup[]> => {
-    const response =
-      await axiosInstance.get<InterviewSetup[]>("/interviews/setup");
+  getSetups: async (): Promise<HttpResponse<InterviewSetup[]>> => {
+    const response = await axiosInstance.get("/interviews/setup");
     return response.data;
   },
 
-  getSetup: async (setupId: string): Promise<InterviewSetup> => {
-    const response = await axiosInstance.get<InterviewSetup>(
-      `/interviews/setup/${setupId}`
-    );
+  getSetup: async (setupId: string): Promise<HttpResponse<InterviewSetup>> => {
+    const response = await axiosInstance.get(`/interviews/setup/${setupId}`);
     return response.data;
   },
 
-  createSetup: async (data: CreateSetupRequest): Promise<{ id: string }> => {
-    const response = await axiosInstance.post<{ id: string }>(
-      "/interviews/setup",
-      data
-    );
+  createSetup: async (
+    data: CreateSetupRequest
+  ): Promise<HttpResponse<{ id: string }>> => {
+    const response = await axiosInstance.post("/interviews/setup", data);
     return response.data;
   },
 };

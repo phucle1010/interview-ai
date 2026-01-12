@@ -4,16 +4,19 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth-store";
+import { useGetMe } from "@/modules/auth/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, History, LogOut } from "lucide-react";
 
 export function Navbar() {
   const router = useRouter();
-  const { user, logout, isAuthenticated, checkAuth } = useAuthStore();
+  const { user, logout, isAuthenticated, initialize } = useAuthStore();
+  useGetMe(); // This will automatically fetch user if authenticated
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    // Initialize auth state on mount
+    initialize();
+  }, [initialize]);
 
   const handleLogout = () => {
     logout();
