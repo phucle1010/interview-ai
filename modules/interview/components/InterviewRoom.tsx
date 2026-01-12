@@ -24,9 +24,21 @@ import { Mic, MicOff, Square, Loader2 } from "lucide-react";
 
 interface InterviewRoomProps {
   setupId: string;
+  role: string;
+  level: string;
+  focusAreas: string[];
+  language: string;
+  maxQuestions: number;
 }
 
-export function InterviewRoom({ setupId }: InterviewRoomProps) {
+export function InterviewRoom({
+  setupId,
+  role,
+  level,
+  focusAreas,
+  language,
+  maxQuestions,
+}: InterviewRoomProps) {
   const router = useRouter();
   const { data: setup } = useInterviewSetup(setupId);
   const { mutate: startInterview } = useStartInterview();
@@ -205,7 +217,7 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
 
       // Start interview session
       startInterview(
-        { setupId },
+        { setupId, role, level, focusAreas, language, maxQuestions },
         {
           onSuccess: (response) => {
             setSession(response.data?.sessionId || "", setupId, setupLanguage);
@@ -232,6 +244,11 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
   }, [
     setup,
     setupId,
+    role,
+    level,
+    focusAreas,
+    language,
+    maxQuestions,
     startInterview,
     setSession,
     setCurrentQuestion,

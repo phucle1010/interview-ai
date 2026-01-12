@@ -19,30 +19,41 @@ export interface SherpaOnnxWasmConfig {
 
 /**
  * Load Sherpa-ONNX WASM module for browser usage
- * This is a placeholder - implement based on your WASM loading strategy
+ * Implementation supports loading from CDN or local files
  */
 export async function loadSherpaOnnxWasm(
   config: SherpaOnnxWasmConfig = {}
 ): Promise<Record<string, unknown>> {
   const {
-    wasmUrl = "https://cdn.jsdelivr.net/npm/sherpa-onnx@latest/lib/sherpa-onnx-wasm.js",
+    wasmUrl = "https://cdn.jsdelivr.net/npm/sherpa-onnx@latest/lib/sherpa-onnx-wasm-main.js",
   } = config;
 
   try {
-    // Option 1: Load from CDN
+    // Option 1: Load from CDN (for browser)
     if (typeof window !== "undefined") {
-      // Dynamic import from CDN
-      const wasmModule = await import(/* @vite-ignore */ wasmUrl);
-      return wasmModule as Record<string, unknown>;
+      try {
+        // Dynamic import from CDN
+        const wasmModule = await import(/* @vite-ignore */ wasmUrl);
+        return wasmModule as Record<string, unknown>;
+      } catch (cdnError) {
+        // Fallback to local files if CDN fails
+        console.warn("CDN load failed, trying local files", cdnError);
+      }
     }
 
     // Option 2: Load local WASM files
-    // You can download WASM files and place them in public/sherpa-onnx/
+    // Download WASM files and place them in public/sherpa-onnx/
     // Then load them using:
-    // const wasmModule = await import("/sherpa-onnx/sherpa-onnx-wasm.js");
-    // return wasmModule;
-
-    throw new Error("Sherpa-ONNX WASM loading not implemented");
+    try {
+      const localWasmUrl = "/sherpa-onnx/sherpa-onnx-wasm-main.js";
+      const wasmModule = await import(/* @vite-ignore */ localWasmUrl);
+      return wasmModule as Record<string, unknown>;
+    } catch (localError) {
+      // If both CDN and local fail, throw error
+      throw new Error(
+        `Failed to load Sherpa-ONNX WASM from both CDN and local files. Please ensure WASM files are available.`
+      );
+    }
   } catch (error) {
     throw new Error(
       `Failed to load Sherpa-ONNX WASM: ${error instanceof Error ? error.message : "Unknown error"}`

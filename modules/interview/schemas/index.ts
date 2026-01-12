@@ -47,7 +47,7 @@ export const LANGUAGES = [
 ] as const;
 
 export interface InterviewSetup {
-  id: string;
+  _id: string;
   name?: string;
   jobRole: string;
   experienceLevel: string;
