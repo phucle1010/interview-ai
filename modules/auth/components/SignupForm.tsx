@@ -44,10 +44,17 @@ export function SignupForm() {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader>
-        <CardTitle>Sign Up</CardTitle>
-        <CardDescription>Create a new account to get started</CardDescription>
+    <Card className="w-full max-w-md glass shadow-2xl border-border/50 scale-in">
+      <CardHeader className="space-y-1 pb-4">
+        <CardTitle className="text-2xl gradient-text fade-in">
+          Get Started
+        </CardTitle>
+        <CardDescription
+          className="fade-in"
+          style={{ animationDelay: "100ms" }}
+        >
+          Create a new account to get started
+        </CardDescription>
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -118,13 +125,20 @@ export function SignupForm() {
               )}
             />
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isPending}>
+          <CardFooter className="flex flex-col space-y-4 pt-4">
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 transition-all hover:scale-105"
+              disabled={isPending}
+            >
               {isPending ? "Creating account..." : "Sign Up"}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link href="/login" className="text-primary hover:underline">
+              <Link
+                href="/login"
+                className="font-medium text-primary hover:text-primary/80 transition-colors"
+              >
                 Login
               </Link>
             </p>

@@ -12,7 +12,7 @@ function SetupLoading() {
 export default function SetupPage() {
   return (
     <Suspense fallback={<SetupLoading />}>
-      <div className="container mx-auto max-w-2xl p-6">
+      <div className="container mx-auto max-w-5xl p-6">
         <SetupForm />
       </div>
     </Suspense>

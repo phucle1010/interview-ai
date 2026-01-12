@@ -24,14 +24,25 @@ export function DashboardContent() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-8 flex items-center justify-between fade-in">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">Manage your interview setups</p>
+          <h1 className="text-4xl font-bold gradient-text mb-2 fade-in">
+            Dashboard
+          </h1>
+          <p
+            className="text-muted-foreground fade-in"
+            style={{ animationDelay: "100ms" }}
+          >
+            Manage your interview setups
+          </p>
         </div>
-        <Link href="/dashboard/setup">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
+        <Link
+          href="/dashboard/setup"
+          className="fade-in"
+          style={{ animationDelay: "200ms" }}
+        >
+          <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 transition-all duration-200 hover:scale-105">
+            <Plus className="mr-2 h-4 w-4 transition-transform group-hover:rotate-90" />
             New Setup
           </Button>
         </Link>
@@ -75,23 +86,35 @@ export function DashboardContent() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {(setupQuery?.setups || []).map((setup) => (
-            <Card key={setup.id}>
-              <CardHeader>
-                <CardTitle>{setup.jobRole}</CardTitle>
-                <CardDescription>
-                  {setup.experienceLevel} • {setup.language}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {(setupQuery?.setups || []).map((setup, index) => (
+            <Card
+              key={setup.id}
+              className="glass group hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 ease-out hover:-translate-y-1 border-border/50 fade-in"
+              style={{
+                animationDelay: `${index * 50}ms`,
+              }}
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                  {setup.jobRole}
+                </CardTitle>
+                <CardDescription className="flex items-center gap-2">
+                  <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                    {setup.experienceLevel}
+                  </span>
+                  <span>•</span>
+                  <span>{setup.language.toUpperCase()}</span>
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="mb-2">
-                  <p className="text-sm font-medium">Focus Areas:</p>
-                  <div className="mt-1 flex flex-wrap gap-1">
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm font-medium mb-2">Focus Areas:</p>
+                  <div className="flex flex-wrap gap-1.5">
                     {setup.focusAreas.map((area) => (
                       <span
                         key={area}
-                        className="rounded-full bg-secondary px-2 py-1 text-xs"
+                        className="inline-flex items-center rounded-md bg-gradient-to-r from-accent/20 to-accent/10 px-2 py-1 text-xs font-medium text-accent-foreground border border-accent/20"
                       >
                         {area}
                       </span>
@@ -104,7 +127,7 @@ export function DashboardContent() {
               </CardContent>
               <CardFooter>
                 <Button
-                  className="w-full"
+                  className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md shadow-primary/20 transition-all hover:scale-105"
                   onClick={() => handleStartInterview(setup.id)}
                 >
                   Start Interview

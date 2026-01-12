@@ -23,9 +23,14 @@ export function HistoryList() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Interview History</h1>
-        <p className="text-muted-foreground">
+      <div className="mb-8 fade-in">
+        <h1 className="text-4xl font-bold gradient-text mb-2 fade-in">
+          Interview History
+        </h1>
+        <p
+          className="text-muted-foreground fade-in"
+          style={{ animationDelay: "100ms" }}
+        >
           View your past interview sessions
         </p>
       </div>
@@ -65,32 +70,50 @@ export function HistoryList() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {sessions.map((session) => (
-            <Card key={session.id}>
-              <CardHeader>
-                <CardTitle>{session.jobRole}</CardTitle>
-                <CardDescription>
-                  {session.experienceLevel} • {session.language}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {sessions.map((session, index) => (
+            <Card
+              key={session.id}
+              className="glass group hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 ease-out hover:-translate-y-1 border-border/50 fade-in"
+              style={{
+                animationDelay: `${index * 50}ms`,
+              }}
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                  {session.jobRole}
+                </CardTitle>
+                <CardDescription className="flex items-center gap-2">
+                  <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                    {session.experienceLevel}
+                  </span>
+                  <span>•</span>
+                  <span>{session.language.toUpperCase()}</span>
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                   <span>
                     {new Date(session.createdAt).toLocaleDateString()}
                   </span>
                 </div>
                 {session.score !== undefined && (
-                  <div className="mb-4 flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-primary" />
-                    <span className="font-semibold">
-                      Score: {session.score}
-                    </span>
+                  <div className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 p-3 border border-primary/20">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-xs text-muted-foreground">Score</p>
+                      <p className="text-xl font-bold text-primary">
+                        {session.score}
+                      </p>
+                    </div>
                   </div>
                 )}
                 <Link href={`/history/${session.sessionId}`}>
-                  <Button className="w-full" variant="outline">
+                  <Button
+                    className="w-full border-2 hover:bg-accent/50 transition-all hover:scale-105"
+                    variant="outline"
+                  >
                     View Details
                   </Button>
                 </Link>

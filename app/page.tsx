@@ -3,15 +3,11 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { auth } from "@/lib/storages/auth";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Hero } from "@/components/landing/Hero";
+import { Features } from "@/components/landing/Features";
+import { HowItWorks } from "@/components/landing/HowItWorks";
+import { Stats } from "@/components/landing/Stats";
+import { Footer } from "@/components/landing/Footer";
 
 export default function HomePage() {
   const router = useRouter();
@@ -24,30 +20,16 @@ export default function HomePage() {
   }, [router]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-4xl">Interview AI</CardTitle>
-          <CardDescription className="text-lg">
-            AI-powered interview practice platform with real-time speech
-            recognition
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <Link href="/login">
-              <Button size="lg" className="w-full sm:w-auto">
-                Login
-              </Button>
-            </Link>
-            <Link href="/signup">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                Sign Up
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen flex flex-col">
+      <Hero />
+      <Stats />
+      <div id="features">
+        <Features />
+      </div>
+      <div id="how-it-works">
+        <HowItWorks />
+      </div>
+      <Footer />
     </div>
   );
 }
