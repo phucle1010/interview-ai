@@ -1,0 +1,7 @@
+# Models directory
+# Place .onnx and tokens.txt files here for each language
+# Example structure:
+# /models/en/model.onnx
+# /models/en/tokens.txt
+# /models/vi/model.onnx
+# /models/vi/tokens.txt
