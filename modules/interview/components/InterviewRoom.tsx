@@ -39,7 +39,6 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
     isProcessing,
     currentQuestion,
     messages,
-    language,
     setSession,
     addMessage,
     setCurrentQuestion,
@@ -87,7 +86,7 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
         { sessionId },
         {
           onSuccess: (result) => {
-            router.push(`/history/${sessionId}?score=${result.score}`);
+            router.push(`/history/${sessionId}?score=${result.data?.score}`);
           },
           onError: (err) => {
             setError(
@@ -123,14 +122,14 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
           onSuccess: (response) => {
             addMessage({
               type: "ai",
-              content: response.response,
+              content: response.data?.response || "",
             });
 
-            if (response.question) {
-              setCurrentQuestion(response.question);
+            if (response.data?.question) {
+              setCurrentQuestion(response.data?.question);
             }
 
-            if (response.isComplete) {
+            if (response.data?.isComplete) {
               handleEndInterview(sessionId);
             }
             setProcessing(false);
@@ -209,9 +208,12 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
         { setupId },
         {
           onSuccess: (response) => {
-            setSession(response.sessionId, setupId, setupLanguage);
-            setCurrentQuestion(response.question);
-            loadModelAndStartAudio(setupLanguage, response.sessionId);
+            setSession(response.data?.sessionId || "", setupId, setupLanguage);
+            setCurrentQuestion(response.data?.question || "");
+            loadModelAndStartAudio(
+              setupLanguage,
+              response.data?.sessionId || ""
+            );
           },
           onError: (err) => {
             setError(
@@ -255,11 +257,13 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
 
   if (isInitializing) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <Card className="w-full max-w-md">
+      <div className="flex min-h-screen items-center justify-center fade-in">
+        <Card className="w-full max-w-md glass border-border/50 scale-in">
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="mb-4 h-8 w-8 animate-spin text-primary" />
-            <p className="text-muted-foreground">Initializing interview...</p>
+            <Loader2 className="mb-4 h-8 w-8 animate-spin-smooth text-primary" />
+            <p className="text-muted-foreground font-medium">
+              Initializing interview...
+            </p>
             <p className="mt-2 text-sm text-muted-foreground">
               Loading AI model...
             </p>
@@ -273,40 +277,52 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
     <div className="container mx-auto p-6">
       <div className="mx-auto max-w-4xl">
         {error && (
-          <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          <div className="mb-4 rounded-lg bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive shadow-sm">
             {error}
           </div>
         )}
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Interview Session</CardTitle>
-            <CardDescription>
+        <Card className="mb-6 glass border-border/50 shadow-xl">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-2xl gradient-text">
+              Interview Session
+            </CardTitle>
+            <CardDescription className="flex items-center gap-2">
+              <span
+                className={`inline-flex h-2 w-2 rounded-full ${
+                  isActive ? "bg-green-500 animate-pulse" : "bg-gray-400"
+                }`}
+              />
               {isActive ? "Interview in progress" : "Interview ended"}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
             {currentQuestion && (
-              <div className="mb-6 rounded-lg bg-muted p-4">
-                <p className="text-sm font-medium text-muted-foreground">
+              <div className="rounded-xl bg-gradient-to-br from-primary/10 via-accent/5 to-transparent p-6 border border-primary/20">
+                <p className="text-sm font-semibold text-primary mb-2 uppercase tracking-wide">
                   Current Question:
                 </p>
-                <p className="mt-2 text-lg">{currentQuestion}</p>
+                <p className="text-lg font-medium leading-relaxed">
+                  {currentQuestion}
+                </p>
               </div>
             )}
 
             {/* Audio Visualizer */}
-            <div className="mb-6 flex items-center justify-center gap-1">
+            <div className="mb-6 flex items-end justify-center gap-1.5 h-20">
               {Array.from({ length: 20 }).map((_, i) => {
                 const barActive = isActive && !isMuted && audioLevel > i / 20;
                 return (
                   <div
                     key={i}
-                    className={`h-8 w-1 rounded transition-colors ${
-                      barActive ? "bg-primary" : "bg-muted"
+                    className={`w-1.5 rounded-full transition-all duration-200 ease-out ${
+                      barActive
+                        ? "bg-gradient-to-t from-primary via-primary/80 to-primary/60 shadow-lg shadow-primary/50"
+                        : "bg-muted"
                     }`}
                     style={{
-                      height: barActive ? `${8 + audioLevel * 32}px` : "8px",
+                      height: barActive ? `${12 + audioLevel * 60}px` : "12px",
+                      transitionDelay: `${i * 10}ms`,
                     }}
                   />
                 );
@@ -319,6 +335,11 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
                 variant={isMuted ? "outline" : "default"}
                 onClick={toggleMute}
                 disabled={!isActive}
+                className={
+                  !isMuted
+                    ? "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-md shadow-primary/20 transition-all hover:scale-105"
+                    : ""
+                }
               >
                 {isMuted ? (
                   <>
@@ -336,6 +357,7 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
                 variant="destructive"
                 onClick={() => sessionId && handleEndInterview(sessionId)}
                 disabled={!isActive}
+                className="shadow-md shadow-destructive/20 transition-all hover:scale-105"
               >
                 <Square className="mr-2 h-4 w-4" />
                 End Interview
@@ -343,42 +365,58 @@ export function InterviewRoom({ setupId }: InterviewRoomProps) {
             </div>
 
             {isProcessing && (
-              <div className="mt-4 text-center text-sm text-muted-foreground">
-                AI is processing your response...
+              <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>AI is processing your response...</span>
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Chat Timeline */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Conversation</CardTitle>
+        <Card className="glass border-border/50 shadow-xl">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl gradient-text">
+              Conversation
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
               {messages.length === 0 ? (
-                <p className="text-center text-muted-foreground">
-                  No messages yet. Start speaking to begin the interview.
-                </p>
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 rounded-full bg-primary/10 p-4">
+                    <Mic className="h-8 w-8 text-primary" />
+                  </div>
+                  <p className="text-muted-foreground font-medium">
+                    No messages yet
+                  </p>
+                  <p className="text-sm text-muted-foreground/80 mt-1">
+                    Start speaking to begin the interview
+                  </p>
+                </div>
               ) : (
-                messages.map((message) => (
+                messages.map((message, index) => (
                   <div
                     key={message.id}
                     className={`flex ${
                       message.type === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    } slide-in-up`}
+                    style={{
+                      animationDelay: `${index * 50}ms`,
+                    }}
                   >
                     <div
-                      className={`max-w-[80%] rounded-lg p-3 ${
+                      className={`max-w-[80%] rounded-2xl px-4 py-3 shadow-md ${
                         message.type === "user"
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
+                          ? "bg-gradient-to-br from-primary to-primary/80 text-primary-foreground"
+                          : "glass bg-muted/50 border border-border/50"
                       }`}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <p className="text-sm leading-relaxed">
+                        {message.content}
+                      </p>
                       <p
-                        className={`mt-1 text-xs ${
+                        className={`mt-1.5 text-xs ${
                           message.type === "user"
                             ? "text-primary-foreground/70"
                             : "text-muted-foreground"

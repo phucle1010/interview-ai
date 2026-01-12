@@ -48,16 +48,39 @@ export const LANGUAGES = [
 
 export interface InterviewSetup {
   id: string;
+  name?: string;
   jobRole: string;
   experienceLevel: string;
   focusAreas: string[];
   language: string;
+  maxQuestions?: number;
+  isDefault?: boolean;
   createdAt: string;
+  updatedAt?: string;
+}
+
+export interface InterviewSetupResponse {
+  setups: InterviewSetup[];
+  total: number;
 }
 
 export interface CreateSetupRequest {
+  name?: string;
   jobRole: string;
   experienceLevel: string;
   focusAreas: string[];
   language: string;
+  maxQuestions?: number;
+  isDefault?: boolean;
+  saveAsTemplate?: boolean;
+}
+
+export interface UpdateSetupRequest {
+  name?: string;
+  jobRole?: string;
+  experienceLevel?: string;
+  focusAreas?: string[];
+  language?: string;
+  maxQuestions?: number;
+  isDefault?: boolean;
 }

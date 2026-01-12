@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useUserInterviews } from "../hooks/use-history";
-import { useAuthStore } from "@/store/auth-store";
+import { useMemo } from "react";
+import { useChatHistoriesListInfinite } from "@/modules/voice/hooks/use-voice";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,28 +11,43 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Calendar, TrendingUp } from "lucide-react";
+import { Calendar, Loader2, MessagesSquare } from "lucide-react";
 
 export function HistoryList() {
-  const { user } = useAuthStore();
   const {
-    data: sessions,
+    data,
     isLoading,
+    isError,
     error,
-  } = useUserInterviews(user?.id || null);
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useChatHistoriesListInfinite();
+
+  const histories = useMemo(() => {
+    if (!data?.pages) return [];
+    return data.pages.flatMap((page) => page.data?.histories || []);
+  }, [data]);
+
+  console.info("histories", histories);
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold">Interview History</h1>
-        <p className="text-muted-foreground">
+      <div className="mb-8 fade-in">
+        <h1 className="text-4xl font-bold gradient-text mb-2 fade-in">
+          Interview History
+        </h1>
+        <p
+          className="text-muted-foreground fade-in"
+          style={{ animationDelay: "100ms" }}
+        >
           View your past interview sessions
         </p>
       </div>
 
-      {error && (
+      {isError && (
         <div className="mb-4 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-          {error.message}
+          {error instanceof Error ? error.message : "Failed to load histories"}
         </div>
       )}
 
@@ -53,7 +68,7 @@ export function HistoryList() {
             </Card>
           ))}
         </div>
-      ) : !sessions || sessions.length === 0 ? (
+      ) : histories.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <p className="mb-4 text-muted-foreground">
@@ -65,38 +80,65 @@ export function HistoryList() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {sessions.map((session) => (
-            <Card key={session.id}>
-              <CardHeader>
-                <CardTitle>{session.jobRole}</CardTitle>
-                <CardDescription>
-                  {session.experienceLevel} • {session.language}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {histories.map((history, index) => (
+            <Card
+              key={`${history.sessionId}-${index}`}
+              className="glass group hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 ease-out hover:-translate-y-1 border-border/50 fade-in"
+              style={{
+                animationDelay: `${index * 50}ms`,
+              }}
+            >
+              <CardHeader className="pb-3">
+                <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                  Session {history.sessionId.slice(0, 8)}...
+                </CardTitle>
+                <CardDescription className="flex items-center gap-2">
+                  <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
+                    {new Date(history.createdAt).toLocaleDateString()}
+                  </span>
+                  <span>•</span>
+                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                    <MessagesSquare className="h-4 w-4" />
+                    {history.messageCount ?? 0} msgs
+                  </span>
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
-                  <span>
-                    {new Date(session.createdAt).toLocaleDateString()}
-                  </span>
+                  <span>{new Date(history.createdAt).toLocaleString()}</span>
                 </div>
-                {session.score !== undefined && (
-                  <div className="mb-4 flex items-center gap-2">
-                    <TrendingUp className="h-4 w-4 text-primary" />
-                    <span className="font-semibold">
-                      Score: {session.score}
-                    </span>
-                  </div>
-                )}
-                <Link href={`/history/${session.sessionId}`}>
-                  <Button className="w-full" variant="outline">
+                <Link href={`/history/${history.sessionId}`}>
+                  <Button
+                    className="w-full border-2 hover:bg-accent/50 transition-all hover:scale-105"
+                    variant="outline"
+                  >
                     View Details
                   </Button>
                 </Link>
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {hasNextPage && (
+        <div className="mt-8 flex justify-center">
+          <Button
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            className="min-w-[180px]"
+          >
+            {isFetchingNextPage ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading...
+              </span>
+            ) : (
+              "Load More"
+            )}
+          </Button>
         </div>
       )}
     </div>
