@@ -1,12 +1,13 @@
 import { Suspense } from "react";
 import { LoginForm } from "@/modules/auth/components/LoginForm";
+import { Loader2 } from "lucide-react";
 
 function LoginLoading() {
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="text-center">
-        <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto" />
-        <p className="text-muted-foreground">Loading...</p>
+      <div className="text-center space-y-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+        <p className="text-sm text-muted-foreground">Loading login page...</p>
       </div>
     </div>
   );
@@ -15,8 +16,16 @@ function LoginLoading() {
 export default function LoginPage() {
   return (
     <Suspense fallback={<LoginLoading />}>
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <LoginForm />
+      <div className="flex min-h-screen items-center justify-center p-4 relative overflow-hidden">
+        {/* Background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(253,128,66,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(253,128,66,0.08),transparent_50%)]" />
+
+        {/* Content */}
+        <div className="relative z-10 w-full">
+          <LoginForm />
+        </div>
       </div>
     </Suspense>
   );

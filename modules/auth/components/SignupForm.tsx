@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { User, Mail, Lock, Eye, EyeOff, Loader2, UserPlus } from "lucide-react";
 
 import { signupSchema, type SignupFormData } from "@/modules/auth/schemas";
 import { useSignup } from "@/modules/auth/hooks/use-auth";
@@ -25,9 +27,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { cn } from "@/lib/utils";
 
 export function SignupForm() {
   const { mutate: signup, isPending, error } = useSignup();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
@@ -44,13 +49,18 @@ export function SignupForm() {
   };
 
   return (
-    <Card className="w-full max-w-md glass shadow-2xl border-border/50 scale-in">
-      <CardHeader className="space-y-1 pb-4">
-        <CardTitle className="text-2xl gradient-text fade-in">
+    <Card className="w-full mx-auto max-w-md glass shadow-2xl border-border/50 scale-in backdrop-blur-xl bg-card/95">
+      <CardHeader className="space-y-2 pb-6">
+        <div className="flex items-center justify-center mb-2">
+          <div className="rounded-full bg-gradient-to-br from-primary/20 to-primary/10 p-3">
+            <UserPlus className="h-6 w-6 text-primary" />
+          </div>
+        </div>
+        <CardTitle className="text-3xl font-bold text-center gradient-text fade-in">
           Get Started
         </CardTitle>
         <CardDescription
-          className="fade-in"
+          className="text-center fade-in"
           style={{ animationDelay: "100ms" }}
         >
           Create a new account to get started
@@ -58,9 +68,10 @@ export function SignupForm() {
       </CardHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-5">
             {error && (
-              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+              <div className="rounded-lg bg-destructive/10 border border-destructive/20 p-3 text-sm text-destructive flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
+                <div className="h-1.5 w-1.5 rounded-full bg-destructive" />
                 {error.message}
               </div>
             )}
@@ -70,9 +81,23 @@ export function SignupForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name (Optional)</FormLabel>
+                  <FormLabel className="text-sm font-medium text-foreground">
+                    Full Name{" "}
+                    <span className="text-muted-foreground">(Optional)</span>
+                  </FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        placeholder="John Doe"
+                        className={cn(
+                          "pl-10 pr-4 h-11",
+                          "bg-background border-border/50",
+                          "focus-visible:border-primary focus-visible:ring-primary/20"
+                        )}
+                        {...field}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -84,13 +109,23 @@ export function SignupForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="text-sm font-medium text-foreground">
+                    Email Address
+                  </FormLabel>
                   <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="you@example.com"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        type="email"
+                        placeholder="you@example.com"
+                        className={cn(
+                          "pl-10 pr-4 h-11",
+                          "bg-background border-border/50",
+                          "focus-visible:border-primary focus-visible:ring-primary/20"
+                        )}
+                        {...field}
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -102,9 +137,37 @@ export function SignupForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel className="text-sm font-medium text-foreground">
+                    Password
+                  </FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        className={cn(
+                          "pl-10 pr-11 h-11",
+                          "bg-background border-border/50",
+                          "focus-visible:border-primary focus-visible:ring-primary/20"
+                        )}
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-sm p-1"
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -116,30 +179,78 @@ export function SignupForm() {
               name="confirmPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirm Password</FormLabel>
+                  <FormLabel className="text-sm font-medium text-foreground">
+                    Confirm Password
+                  </FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                      <Input
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm your password"
+                        className={cn(
+                          "pl-10 pr-11 h-11",
+                          "bg-background border-border/50",
+                          "focus-visible:border-primary focus-visible:ring-primary/20"
+                        )}
+                        {...field}
+                      />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-primary/20 rounded-sm p-1"
+                        aria-label={
+                          showConfirmPassword
+                            ? "Hide password"
+                            : "Show password"
+                        }
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </CardContent>
-          <CardFooter className="flex flex-col space-y-4 pt-4">
+          <CardFooter className="flex flex-col space-y-4 mt-4">
             <Button
               type="submit"
-              className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 transition-all hover:scale-105"
+              className={cn(
+                "w-full h-11 text-base font-semibold",
+                "bg-gradient-to-r from-primary to-primary/90",
+                "hover:from-primary/90 hover:to-primary/80",
+                "shadow-lg shadow-primary/25",
+                "transition-all duration-200",
+                "hover:shadow-xl hover:shadow-primary/30",
+                "disabled:opacity-70 disabled:cursor-not-allowed",
+                "focus-visible:ring-2 focus-visible:ring-primary/50"
+              )}
               disabled={isPending}
             >
-              {isPending ? "Creating account..." : "Sign Up"}
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                "Create Account"
+              )}
             </Button>
             <p className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="font-medium text-primary hover:text-primary/80 transition-colors"
+                className="font-semibold text-primary hover:text-primary/80 transition-colors underline-offset-4 hover:underline"
               >
-                Login
+                Sign in
               </Link>
             </p>
           </CardFooter>
